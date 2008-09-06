@@ -25,7 +25,7 @@ class ModuleDependencyFinder(modulefinder.ModuleFinder):
             self.depgraph.setdefault(caller.__name__,set()).add(dependency)
 
 
-def gengraph(root):
+def find_dependencies(root):
     path = sys.path[:]
     path.append('.')
     mdf = ModuleDependencyFinder(path, debug=0, excludes=[])
@@ -46,7 +46,7 @@ def repair(graph, modules):
 
 
 def main(argv):
-    depgraph = gengraph(argv[0])
+    depgraph = find_dependencies(argv[0])
     print 'imports = ',
     pprint.pprint(depgraph)
 
