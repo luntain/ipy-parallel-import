@@ -1,14 +1,8 @@
-from unittest import main, TestCase
-from preimport import gengraph, preimport
+from unittest import TestCase, TestLoader, TextTestRunner
+from preimport import preimport
+from testdata.importgraph import import_graph
 import sys
 
-import_graph = {
-    'testdata.human': 'testdata.bear',
-    'testdata.human': 'testdata.pelican',
-    'testdata.bear': 'testdata.sea.fish',
-    'testdata.pelican': 'testdata.sea.fish',
-    'testdata.sea.fish': 'testdata.sea.plankton',
-}
 
 class preimport_test(TestCase):
 
@@ -17,7 +11,7 @@ class preimport_test(TestCase):
         # should not blow up
 
     def test_one_edge_graph(self):
-        nodes = set(import_graph.keys()).union(set(import_graph.values()))
+        nodes = reduce(set.union, import_graph.values(), set(import_graph.keys()))
         for earthling in nodes:
             assert earthling not in sys.modules
         preimport(import_graph)
@@ -25,10 +19,6 @@ class preimport_test(TestCase):
             assert earthling in sys.modules
 
 
-    def test_gengraph(self):
-        generated_graph = gengraph('testdata/bear.py')
-        self.assertEquals(generated_graph, import_graph)
-
-
 if __name__ == '__main__':
-    main()
+    test = TestLoader().loadTestsFromName('__main__')
+    TextTestRunner().run(test)

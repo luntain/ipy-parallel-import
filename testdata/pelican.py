@@ -1,1 +1,2 @@
-from sea import fish
+from testdata.sea import fish
+print 'sky'

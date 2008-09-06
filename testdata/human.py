@@ -1,2 +1,2 @@
-import pelican
-import bear
+import testdata.pelican
+import testdata.bear

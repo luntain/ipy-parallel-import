@@ -1,1 +1,1 @@
-from sea import fish
+from testdata.sea.fish import tuna
