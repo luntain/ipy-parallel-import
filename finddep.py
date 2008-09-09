@@ -1,15 +1,15 @@
 import sys, pprint
 
-import modulefinder
+import modifiedmodulefinder
 
-class ModuleDependencyFinder(modulefinder.ModuleFinder):
+class ModuleDependencyFinder(modifiedmodulefinder.ModuleFinder):
     def __init__(self,*args,**kwargs):
         self.depgraph = {}
-        modulefinder.ModuleFinder.__init__(self,*args,**kwargs)
+        modifiedmodulefinder.ModuleFinder.__init__(self,*args,**kwargs)
 
     def import_hook(self, name, caller=None, fromList=None):
         self.add_dependencies(name, caller, fromList)
-        return modulefinder.ModuleFinder.import_hook(self,name,caller,fromList)
+        return modifiedmodulefinder.ModuleFinder.import_hook(self,name,caller,fromList)
 
     def add_dependencies(self, name, caller, fromList):
         from_names = map(lambda n: '.'+ n, fromList or [])
