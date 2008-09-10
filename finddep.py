@@ -2,6 +2,14 @@ import sys, pprint
 
 import modifiedmodulefinder
 
+def get_enclosing_packages(name):
+    def f(partial_prefixes, component):
+        ps = map(lambda p: component + '.' + p, partial_prefixes)
+        ps.append(component)
+        return ps
+    return reduce(f, reversed(name.split('.')[:-1]), [])
+
+
 class ModuleDependencyFinder(modifiedmodulefinder.ModuleFinder):
     def __init__(self,*args,**kwargs):
         self.depgraph = {}
@@ -16,11 +24,7 @@ class ModuleDependencyFinder(modifiedmodulefinder.ModuleFinder):
         from_names.append('')
         dependencies = map(lambda n: name + n, from_names)
 
-        def f(partial_prefixes, component):
-            ps = map(lambda p: component + '.' + p, partial_prefixes)
-            ps.append(component)
-            return ps
-        dependencies.extend(reduce(f, reversed(name.split('.')), []))
+        dependencies.extend(get_enclosing_packages(name))
         for dependency in dependencies:
             self.depgraph.setdefault(caller.__name__,set()).add(dependency)
 
@@ -41,7 +45,8 @@ def repair(graph, modules):
 
     result = dict()
     for module, dependencies_dict in graph.items():
-        result[module] = set(elem for elem in dependencies_dict if not module.startswith(elem) and elem in modules)
+        enc_packages = get_enclosing_packages(module)
+        result[module] = set(elem for elem in dependencies_dict if not elem in enc_packages and elem in modules)
     return result
 
 
