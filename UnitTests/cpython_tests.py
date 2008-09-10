@@ -8,12 +8,18 @@ from pprint import pprint
 
 class cpython_tests(TestCase):
     def test_finddep(self):
-        generated_graph = find_dependencies('testdata\\human.py')
+        generated_graph = find_dependencies(['testdata\\human.py'])
         self.assertEquals(generated_graph, import_graph)
 
     def test_removing_dependencies_on_enclosing_pacakges(self):
-        generated_graph = find_dependencies('testdata\\sea\\fisherman.py')
+        generated_graph = find_dependencies(['testdata\\sea\\fisherman.py'])
         self.assertEquals(generated_graph['testdata.sea.fisherman'], set(['testdata.sea.fish']))
+
+    def test_many_roots(self):
+        generated_graph = find_dependencies(['testdata\\human.py', 'testdata\\sea\\fisherman.py'])
+        full_graph = dict(import_graph)
+        full_graph.update({'testdata.sea.fisherman': set(['testdata.sea.fish'])})
+        self.assertEquals(generated_graph, full_graph)
 
     def test_get_enclosing_packages(self):
         self.assertEquals(get_enclosing_packages('modulefinder'), [])
