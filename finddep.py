@@ -29,20 +29,24 @@ class ModuleDependencyFinder(modifiedmodulefinder.ModuleFinder):
             self.depgraph.setdefault(caller.__name__,set()).add(dependency)
 
 
-def find_dependencies(root):
+def find_dependencies(roots):
     path = sys.path[:]
     path.append('.')
     mdf = ModuleDependencyFinder(path, debug=0, excludes=[])
-    mdf.run_script(root)
+    for root in roots:
+        mdf.run_script(root)
+        rename_main_module(mdf.depgraph, mdf.modules)
     return repair(mdf.depgraph, mdf.modules)
 
 
-def repair(graph, modules):
+def rename_main_module(graph, modules):
     main_module_path = modules['__main__'].__file__
     root_module_name = main_module_path.rstrip('.py').replace('/', '.').replace('\\', '.')
     graph[root_module_name] = graph['__main__']
     del graph['__main__']
 
+
+def repair(graph, modules):
     result = dict()
     for module, dependencies_dict in graph.items():
         enc_packages = get_enclosing_packages(module)
