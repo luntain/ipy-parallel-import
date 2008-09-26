@@ -65,7 +65,7 @@ def repair(graph, modules):
 
 
 def main(argv):
-    depgraph, module_sizes = find_dependencies(argv[0])
+    depgraph, module_sizes = find_dependencies(argv)
     print 'imports = ',
     pprint.pprint(depgraph)
     print 'module_sizes = '
