@@ -28,6 +28,10 @@ class ModuleDependencyFinder(modifiedmodulefinder.ModuleFinder):
         for dependency in dependencies:
             self.depgraph.setdefault(caller.__name__,set()).add(dependency)
 
+def approx_size(module):
+    if module.__code__ is None:
+        return 1
+    return len(module.__code__.co_code)
 
 def find_dependencies(roots):
     path = sys.path[:]
@@ -36,8 +40,6 @@ def find_dependencies(roots):
     for root in roots:
         mdf.run_script(root)
         rename_main_module(mdf.depgraph, mdf.modules)
-    def approx_size(module):
-        return len(module.__code__.co_code)
     module_sizes = {}
     for name, module in mdf.modules.iteritems():
         if name == '__main__':
@@ -68,7 +70,7 @@ def main(argv):
     depgraph, module_sizes = find_dependencies(argv)
     print 'imports = ',
     pprint.pprint(depgraph)
-    print 'module_sizes = '
+    print 'module_sizes = ',
     pprint.pprint(module_sizes)
 
 if __name__=='__main__':

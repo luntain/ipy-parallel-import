@@ -1,7 +1,7 @@
 import sys, os
 sys.path.append('.')
 from unittest import main, TestCase
-from finddep import find_dependencies, get_enclosing_packages, path2name
+from finddep import approx_size, find_dependencies, get_enclosing_packages, path2name
 from testdata.importgraph import import_graph, expected_module_sizes
 from pprint import pprint
 
@@ -25,6 +25,17 @@ class cpython_tests(TestCase):
 
     def test_path2name(self):
         self.assertEquals(path2name(os.path.join('foo', 'bar', 'module.py')), 'foo.bar.module')
+
+    def test_approx_size(self):
+        class Mock: pass
+        module = Mock()
+        module.__code__ = Mock()
+        module.__code__.co_code = range(2)
+        self.assertEquals(approx_size(module), 2)
+
+        module.__code__ = None
+        self.assertEquals(approx_size(module), 1, 'codeless modules have size of 1')
+
 
 if __name__ == '__main__':
     main()
