@@ -36,7 +36,7 @@ def find_dependencies(roots):
     for root in roots:
         mdf.run_script(root)
         rename_main_module(mdf.depgraph, mdf.modules)
-    return repair(mdf.depgraph, mdf.modules)
+    return repair(mdf.depgraph, mdf.modules), {}
 
 
 def rename_main_module(graph, modules):
@@ -55,7 +55,7 @@ def repair(graph, modules):
 
 
 def main(argv):
-    depgraph = find_dependencies(argv[0])
+    depgraph, _ = find_dependencies(argv[0])
     print 'imports = ',
     pprint.pprint(depgraph)
 

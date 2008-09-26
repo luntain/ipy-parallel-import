@@ -4,3 +4,4 @@ import_graph = {
     'testdata.pelican': set(['testdata.sea.fish', 'testdata.sea']),
     'testdata.sea.fish': set(['testdata.sea.plankton']),
 }
+expected_module_sizes = {}
