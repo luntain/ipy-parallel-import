@@ -1,4 +1,4 @@
-import sys, pprint
+import sys, pprint, os
 
 import modifiedmodulefinder
 
@@ -36,12 +36,22 @@ def find_dependencies(roots):
     for root in roots:
         mdf.run_script(root)
         rename_main_module(mdf.depgraph, mdf.modules)
-    return repair(mdf.depgraph, mdf.modules), {}
+    def approx_size(module):
+        return len(module.__code__.co_code)
+    module_sizes = {}
+    for name, module in mdf.modules.iteritems():
+        if name == '__main__':
+            name = path2name(module.__file__)
+        module_sizes[name] = approx_size(module)
+    return repair(mdf.depgraph, mdf.modules), module_sizes
 
+
+def path2name(path):
+    return path.rstrip('.py').replace(os.path.sep, '.')
 
 def rename_main_module(graph, modules):
     main_module_path = modules['__main__'].__file__
-    root_module_name = main_module_path.rstrip('.py').replace('/', '.').replace('\\', '.')
+    root_module_name = path2name(main_module_path)
     graph[root_module_name] = graph['__main__']
     del graph['__main__']
 
@@ -50,14 +60,16 @@ def repair(graph, modules):
     result = dict()
     for module, dependencies_dict in graph.items():
         enc_packages = get_enclosing_packages(module)
-        result[module] = set(elem for elem in dependencies_dict if not elem in enc_packages and elem in modules)
+        result[module] = set(elem for elem in dependencies_dict if elem in modules)
     return result
 
 
 def main(argv):
-    depgraph, _ = find_dependencies(argv[0])
+    depgraph, module_sizes = find_dependencies(argv[0])
     print 'imports = ',
     pprint.pprint(depgraph)
+    print 'module_sizes = '
+    pprint.pprint(module_sizes)
 
 if __name__=='__main__':
     main(sys.argv[1:])

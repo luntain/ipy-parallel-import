@@ -47,10 +47,30 @@ class ImportTaskMaster(object):
         finally:
             Monitor.Exit(self.lock)
 
+class ProgressReporter(object):
+    def __init__(self, module_sizes, callback):
+        self.module_sizes = module_sizes
+        self.callback = callback
+        self.total_size = sum(module_sizes.values())
+        self.current_size = 0.0
+        self.lock = object()
 
-def preimport(graph, threads=4):
+    def done(self, module_name):
+        Monitor.Enter(self.lock)
+        try:
+            self.current_size += self.module_sizes[module_name]
+            self.callback(self.current_size / self.total_size)
+        finally:
+            Monitor.Exit(self.lock)
+
+
+def preimport(graph, module_sizes=None, callback=None, threads=4):
 
     taskmaster = ImportTaskMaster(graph)
+    if module_sizes and callback:
+        report_progress = ProgressReporter(module_sizes, callback).done
+    else:
+        report_progress = lambda *_: None
 
     def worker():
         while 1:
@@ -58,11 +78,11 @@ def preimport(graph, threads=4):
             if next_module == '!all_done!':
                 return
             if next_module is None:
-                print 'no modules eligible to import, sleeping'
                 Thread.Sleep(200)
             else:
                 __import__(next_module)
                 taskmaster.done(next_module)
+                report_progress(next_module)
 
     workers = []
     for _ in range(threads):
