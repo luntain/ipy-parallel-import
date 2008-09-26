@@ -13,10 +13,11 @@ class cpython_tests(TestCase):
         self.assertEquals(module_sizes, expected_module_sizes)
 
     def test_many_roots(self):
-        generated_graph, _ = find_dependencies(['testdata\\human.py', 'testdata\\sea\\fisherman.py'])
+        generated_graph, module_sizes = find_dependencies(['testdata\\human.py', 'testdata\\sea\\fisherman.py'])
         full_graph = dict(import_graph)
         full_graph.update({'testdata.sea.fisherman': set(['testdata.sea.fish', 'testdata.sea', 'testdata'])})
         self.assertEquals(generated_graph, full_graph)
+        self.assertTrue('testdata.human' in module_sizes, "lost first root's size")
 
     def test_get_enclosing_packages(self):
         self.assertEquals(get_enclosing_packages('modulefinder'), [])

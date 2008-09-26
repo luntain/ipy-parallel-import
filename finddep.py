@@ -42,8 +42,6 @@ def find_dependencies(roots):
         rename_main_module(mdf.depgraph, mdf.modules)
     module_sizes = {}
     for name, module in mdf.modules.iteritems():
-        if name == '__main__':
-            name = path2name(module.__file__)
         module_sizes[name] = approx_size(module)
     return repair(mdf.depgraph, mdf.modules), module_sizes
 
@@ -56,6 +54,8 @@ def rename_main_module(graph, modules):
     root_module_name = path2name(main_module_path)
     graph[root_module_name] = graph['__main__']
     del graph['__main__']
+    modules[root_module_name] = modules['__main__']
+    del modules['__main__']
 
 
 def repair(graph, modules):
