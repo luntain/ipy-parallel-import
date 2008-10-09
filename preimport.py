@@ -64,13 +64,16 @@ class ProgressReporter(object):
             Monitor.Exit(self.lock)
 
 
-def preimport(graph, module_sizes=None, callback=None, threads=4):
+def preimport(graph, module_sizes=None, callback=None, logexc=None, threads=4):
+    NOP = lambda *_: None
 
     taskmaster = ImportTaskMaster(graph)
     if module_sizes and callback:
         report_progress = ProgressReporter(module_sizes, callback).done
     else:
-        report_progress = lambda *_: None
+        report_progress = NOP
+
+    logexc = logexc or NOP
 
     def worker():
         while 1:
@@ -80,7 +83,11 @@ def preimport(graph, module_sizes=None, callback=None, threads=4):
             if next_module is None:
                 Thread.Sleep(200)
             else:
-                __import__(next_module)
+                try:
+                    __import__(next_module)
+                except Exception, e:
+                    logexc(e)
+                    raise
                 taskmaster.done(next_module)
                 report_progress(next_module)
 
